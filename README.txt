@@ -4,13 +4,10 @@ You'll need bowtie v1,
 
 to run this.  bowtie 0.12.7 is the latest release of bowtie 1, and will work.
 
-You will also need screed,
+You will also need screed v0.7, latest from
 
        http://github.com/ctb/screed/
 
 installed in your PYTHONPATH.
-
-You also need pygr.  I'm trying to fix that, it's not a very important
-requirement :).
 
 CTB 3/2012

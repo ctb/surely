@@ -24,7 +24,7 @@ for i in range(n_reads):
 
     # reverse complement?
     if random.choice([0, 1]) == 0:
-        read = str(-pygr.sequence.Sequence(read, ""))
+        read = screed.rc(read)
 
     # error?
     was_mut = False
