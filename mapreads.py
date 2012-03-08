@@ -24,5 +24,6 @@ def bowtie_map_reads(indexpath, readfile, params=[], outputfile=None):
     return outputfile, out, err
 
 if __name__ == '__main__':
-    outfile = bowtie_map_reads('random', 'genome-reads.fa', params=['-f'])
-    print outfile
+    outfile, out, err = bowtie_map_reads('random', 'genome-reads.fa', params=['-f'])
+    print err
+    print 'output in:', outfile

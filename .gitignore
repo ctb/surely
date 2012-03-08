@@ -1,0 +1,5 @@
+*~
+*.pyc
+*.ebwt
+genome.fa
+genome-reads.fa

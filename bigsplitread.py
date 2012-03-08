@@ -36,7 +36,7 @@ class ReadlineUntil(object):
 
         return line
 
-def retrieve(filename, start, stop, verbose=0):
+def retrieve_records(filename, start, stop, verbose=0):
     fp = open(filename, 'rb')
     fp.seek(start)
 
@@ -62,6 +62,41 @@ def retrieve(filename, start, stop, verbose=0):
         assert 0
 
     fp.close()
+    
+def retrieve_bytes(filename, start, stop, verbose=0):
+    fp = open(filename, 'rb')
+    fp.seek(start)
+
+    line = fp.readline()
+    found = False
+    while line and fp.tell() < stop:
+        if verbose:
+            print >>sys.stderr, (line,)
+            
+        if line.startswith('>'):
+            found = True
+            break
+        line = fp.readline()
+
+    if found:
+        yield line
+        while fp.tell() + READCHUNKSIZE < stop:
+            yield fp.read(READCHUNKSIZE)
+
+        remaining = stop - fp.tell()
+        data = fp.read(remaining)
+
+        line = fp.readline()
+        while line and not line.startswith('>'):
+            data += line
+            line = fp.readline()
+
+        yield data
+        
+    else:
+        assert 0
+
+    fp.close()
 
 if __name__ == '__main__':
     filename = '/Users/t/dev/khmer/data/100k-filtered.fa'
@@ -69,9 +104,15 @@ if __name__ == '__main__':
 
     print >>sys.stderr, x, os.path.getsize(filename)
 
-    for (start, stop) in x:
-        for record in retrieve(filename, start, stop):
-            sys.stdout.write('>%s\n%s\n' % (record.name, record.sequence))
+    if 0:
+        for (start, stop) in x:
+            for record in retrieve_records(filename, start, stop):
+                sys.stdout.write('>%s\n%s\n' % (record.name, record.sequence))
+    else:
+        for (start, stop) in x:
+            print start, stop
+            for data in retrieve_bytes(filename, start, stop):
+                sys.stdout.write(data)
 
 #    for record in retrieve(filename, x[-2][0], x[-2][1], verbose=1):
 #         sys.stdout.write('>%s\n%s\n' % (record.name, record.sequence))    
