@@ -2,6 +2,7 @@
 import sys
 import os
 import screed
+import mapreads
 
 READCHUNKSIZE=16*1024
 
@@ -9,11 +10,14 @@ def get_chunks(filename, n_chunks):
     filesize = os.path.getsize(filename)
 
     chunksize = int(filesize / float(n_chunks))
+    print chunksize, filesize, filesize / chunksize
 
     x = []
     for i in range(0, filesize - 2*chunksize, chunksize):
         x.append((i, i + chunksize))
 
+    i += chunksize
+    x.append((i, i + chunksize))
     x.append((i + chunksize, filesize))
 
     return x
@@ -62,6 +66,15 @@ def retrieve_records(filename, start, stop, verbose=0):
         assert 0
 
     fp.close()
+
+def extract_reads_to_file(filename, start, stop):
+    _, tmpfile = mapreads.get_temp_filename('readchunk.fa')
+    fp = open(tmpfile, 'w')
+    for record in retrieve_records(filename, start, stop):
+        fp.write('>%s\n%s\n' % (record.name, record.sequence))
+    fp.close()
+
+    return tmpfile
     
 def retrieve_bytes(filename, start, stop, verbose=0):
     fp = open(filename, 'rb')

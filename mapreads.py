@@ -19,7 +19,7 @@ def bowtie_map_reads(indexpath, readfile, params=[], outputfile=None):
                          stderr=subprocess.PIPE)
     (out, err) = p.communicate()
     if p.returncode != 0:
-        raise CalledProcessError(p.returncode)
+        raise subprocess.CalledProcessError(p.returncode, cmd)
 
     return outputfile, out, err
 
