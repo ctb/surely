@@ -10,15 +10,17 @@ def get_chunks(filename, n_chunks):
     filesize = os.path.getsize(filename)
 
     chunksize = int(filesize / float(n_chunks))
-    print chunksize, filesize, filesize / chunksize
 
     x = []
     for i in range(0, filesize - 2*chunksize, chunksize):
         x.append((i, i + chunksize))
 
     i += chunksize
-    x.append((i, i + chunksize))
-    x.append((i + chunksize, filesize))
+    if (filesize - (i + chunksize)) < int(0.2*chunksize):
+        x.append((i, filesize))
+    else:
+        x.append((i, i + chunksize))
+        x.append((i + chunksize, filesize))
 
     return x
 
@@ -70,13 +72,15 @@ def retrieve_records(filename, start, stop, verbose=0):
 def extract_reads_to_file(filename, start, stop):
     _, tmpfile = mapreads.get_temp_filename('readchunk.fa')
     fp = open(tmpfile, 'w')
-    for record in retrieve_records(filename, start, stop):
-        fp.write('>%s\n%s\n' % (record.name, record.sequence))
+    for data in retrieve_bytes(filename, start, stop):
+        fp.write(data)
     fp.close()
 
     return tmpfile
     
 def retrieve_bytes(filename, start, stop, verbose=0):
+    if verbose:
+        print >>sys.stderr, 'XXX', filename, start, stop
     fp = open(filename, 'rb')
     fp.seek(start)
 
@@ -92,6 +96,8 @@ def retrieve_bytes(filename, start, stop, verbose=0):
         line = fp.readline()
 
     if found:
+        if verbose:
+            print >>sys.stderr, start, 'READING FROM:', fp.tell() - len(line)
         yield line
         while fp.tell() + READCHUNKSIZE < stop:
             yield fp.read(READCHUNKSIZE)
@@ -105,9 +111,11 @@ def retrieve_bytes(filename, start, stop, verbose=0):
             line = fp.readline()
 
         yield data
-        
+
+        if verbose:
+            print >>sys.stderr, stop, 'READING TO:', fp.tell() - len(line)
     else:
-        assert 0
+        pass
 
     fp.close()
 
@@ -115,7 +123,9 @@ if __name__ == '__main__':
     filename = '/Users/t/dev/khmer/data/100k-filtered.fa'
     x = get_chunks(filename, 8)
 
-    print >>sys.stderr, x, os.path.getsize(filename)
+    #print >>sys.stderr, x, os.path.getsize(filename)
+    #for n, (start, stop) in enumerate(x):
+    #    print >>sys.stderr, n, start, stop, stop - start
 
     if 0:
         for (start, stop) in x:
@@ -123,7 +133,6 @@ if __name__ == '__main__':
                 sys.stdout.write('>%s\n%s\n' % (record.name, record.sequence))
     else:
         for (start, stop) in x:
-            print start, stop
             for data in retrieve_bytes(filename, start, stop):
                 sys.stdout.write(data)
 
