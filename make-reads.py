@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 import screed
 import sys
-import pygr.sequence
 import random
 
 random.seed(1)                  # make this reproducible, please.
